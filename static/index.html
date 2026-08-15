@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图纸 AI 审核助手</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <h1 class="app-title">图纸 AI 审核助手</h1>
+        <p class="app-subtitle">上传 PDF 图纸，运行 AI 审核，查看页码与证据，下载审核报告</p>
+      </div>
+      <div class="settings">
+        <span class="settings-label">AI 设置</span>
+        <label class="settings-item">
+          <input type="radio" name="provider" value="gemini-deepseek" checked />
+          <span>Gemini + DeepSeek</span>
+        </label>
+        <label class="settings-item">
+          <input type="radio" name="provider" value="k3-deepseek" />
+          <span>K3 + DeepSeek</span>
+        </label>
+      </div>
+    </header>
+
+    <!-- 首页：单个入口 -->
+    <section id="view-home" class="view">
+      <button id="review-entry" class="review-entry" type="button">AI 图纸审核</button>
+    </section>
+
+    <!-- 上传视图 -->
+    <section id="view-upload" class="view" hidden>
+      <div id="drop-zone" class="drop-zone" tabindex="0">
+        <p class="drop-zone-title">点击选择，或将 PDF 图纸拖到这里</p>
+        <p class="drop-zone-hint">支持 PDF，单个文件不超过 100MB</p>
+        <input id="file-input" type="file" accept="application/pdf,.pdf" hidden />
+      </div>
+      <p id="upload-error" class="error" hidden></p>
+
+      <div id="doc-card" class="doc-card" hidden>
+        <h2 class="doc-card-title">已上传图纸</h2>
+        <dl class="doc-info">
+          <div><dt>文件名</dt><dd id="doc-filename">-</dd></div>
+          <div><dt>页数</dt><dd id="doc-pages">-</dd></div>
+          <div><dt>大小</dt><dd id="doc-size">-</dd></div>
+          <div><dt>SHA256</dt><dd id="doc-sha256">-</dd></div>
+        </dl>
+        <div class="doc-actions">
+          <button id="review-run" class="review-run" type="button" disabled>开始 AI 审核（第 3 步接入）</button>
+          <button id="rechoose" class="rechoose" type="button">重新选择</button>
+        </div>
+      </div>
+
+      <div id="preview-wrap" class="preview-wrap" hidden>
+        <h2 class="preview-title">第一页预览</h2>
+        <img id="preview-img" class="preview-img" alt="第一页预览" />
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

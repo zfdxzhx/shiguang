@@ -1,0 +1,255 @@
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --error-bg: #fef2f2;
+  --error-text: #b91c1c;
+  --error-border: #fecaca;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 920px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+}
+
+/* ---- 顶部 ---- */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.app-title {
+  font-size: 1.6rem;
+  margin: 0 0 0.25rem;
+}
+
+.app-subtitle {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.settings {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  cursor: default;
+}
+
+.settings-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.settings-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+/* ---- 视图切换 ---- */
+.view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+/* ---- 首页入口 ---- */
+.review-entry {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 0.9rem;
+  padding: 1.1rem 4rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.review-entry:hover {
+  background: var(--primary-hover);
+}
+
+.review-entry:active {
+  transform: translateY(1px);
+}
+
+/* ---- 上传区 ---- */
+.drop-zone {
+  width: 100%;
+  max-width: 640px;
+  border: 2px dashed var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--primary);
+  background: #eff6ff;
+}
+
+.drop-zone.busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.drop-zone-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.4rem;
+}
+
+.drop-zone-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ---- 错误提示 ---- */
+.error {
+  width: 100%;
+  max-width: 640px;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  margin: 0;
+}
+
+/* ---- 文档信息卡片 ---- */
+.doc-card {
+  width: 100%;
+  max-width: 640px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.doc-card-title {
+  font-size: 1.1rem;
+  margin: 0 0 0.75rem;
+}
+
+.doc-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.doc-info dt {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.doc-info dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.review-run {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.7rem 1.6rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.review-run:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.review-run:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.rechoose {
+  font-size: 1rem;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+}
+
+.rechoose:hover {
+  background: #f3f4f6;
+}
+
+/* ---- 预览 ---- */
+.preview-wrap {
+  width: 100%;
+  max-width: 640px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 1.25rem;
+}
+
+.preview-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+.preview-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+}
