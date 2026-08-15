@@ -1,0 +1,9 @@
+fastapi>=0.135,<0.136
+uvicorn>=0.51,<0.52
+pydantic>=2.12,<3
+python-multipart>=0.0.22,<0.1
+openai>=2.46,<3
+httpx>=0.28,<0.29
+reportlab>=4.4,<5
+Pillow>=12,<13
+keyring>=25,<26

@@ -1,0 +1,14 @@
+.env
+.env.local
+CLAUDE.local.md
+.claude/settings.local.json
+runtime/private/
+课堂开发证据.md
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+frontend/.wrangler/

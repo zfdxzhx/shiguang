@@ -1,0 +1,33 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- Node / 前端构建产物 ----
+node_modules/
+dist/
+dist-static/
+.next/
+next-env.d.ts
+
+# ---- 运行时私有目录（含分页图、临时 PDF）----
+runtime/
+runtime-private/
+
+# ---- 密钥与本地环境（绝不入 Git）----
+.env
+.env.local
+.env.*.local
+
+# ---- 真实图纸资料 ----
+*.pdf.private/
+private/
+
+# ---- 系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
