@@ -31,18 +31,18 @@
 | 层 | 选型 | 说明 |
 |---|---|---|
 | 语言 | Python 3.12+ | 后端 |
-| Web 框架 | FastAPI + uvicorn | 仅绑定 `127.0.0.1` / `localhost` |
-| 数据校验 | pydantic v2 | 严格 Schema，模型输出视为不可信输入 |
-| 前端 | 轻量单页 HTML+JS，由 FastAPI 静态托管 | 无 Node 构建链，浏览器直开 |
-| PDF 解析 | Poppler（`pdfinfo` / `pdftoppm`） | 本地方页渲染；不依赖在线 OCR |
-| PDF 生成 | reportlab + Pillow | 审核报告导出 |
-| 凭据 | keyring（系统钥匙串） | Key 不落盘到代码、数据库或 Git |
-| AI Provider | 默认 **Gemini＋DeepSeek**；国产备选 **K3＋DeepSeek** | Gemini/K3 接收分页图做视觉提取；DeepSeek 只收最小化文本做复核 |
+| Web 框架 | FastAPI + uvicorn | 仅绑定 `127.0.0.1` / `localhost`（默认 8766 端口） |
+| 数据校验 | pydantic v2 | 严格 Schema（`extra="forbid"`），模型输出视为不可信输入 |
+| 前端 | 轻量单页 HTML+JS+CSS，由 FastAPI 静态托管 | 无 Node 构建链，浏览器直开 |
+| PDF 解析 | PyMuPDF（`pymupdf` 1.28+） | 本地方页渲染、预览与审核分页；不依赖在线 OCR |
+| PDF 生成 | reportlab（UnicodeCIDFont「STSong-Light」） | 审核报告导出，中文 CID 编码 |
+| 凭据 | `.env.local` 白名单（`backend/env.py`） | 仅白名单键读入内存，`.env.local` 已被 `.gitignore` 排除 |
+| AI Provider | 默认取第一个已配置视觉密钥的组合；本课堂默认 **K3 high（读图）＋DeepSeek V4 Pro（文字复核）**，备选 **Gemini 3.7 Flash＋DeepSeek** | Gemini/K3 接收当次任务的分页图做视觉提取；DeepSeek 只收最小化文本做复核 |
 
 ### 2.1 前置环境
 
-- Python 3.12+、Poppler（`pdfinfo` / `pdftoppm` 在 PATH）。
-- AI Provider Key 存放于系统钥匙串（不写入 `.env.local` 之外任何文件）。
+- Python 3.12+，建议使用项目内虚拟环境 `.venv`，再 `pip install -r requirements.txt`。
+- AI Provider Key 只写入项目根目录 `.env.local`（白名单键，见 `backend/env.py`）；该文件已被 `.gitignore` 排除，运行期读入内存，不进 Git / 数据库 / 前端 / 日志。
 
 ## 3. 目标目录结构
 
@@ -53,29 +53,33 @@
 ├── server.py                  # 本地启动与自检入口
 ├── requirements.txt
 ├── .env.example               # 仅示例，不包含真实 Key
+├── .env.local                 # 本地密钥（白名单键，已 gitignore，不入库）
 ├── .gitignore
 ├── backend/
-│   ├── app.py                 # FastAPI 路由与静态托管
-│   ├── intake.py              # PDF 校验、SHA256、本地方页
+│   ├── app.py                 # FastAPI 路由、静态托管、审核状态查询
+│   ├── intake.py              # PDF 校验、SHA256、本地方页、私有存储
 │   ├── providers.py           # Gemini/K3 视觉提取 + DeepSeek 复核
 │   ├── models.py              # 严格结构化契约（审核草稿等）
 │   ├── rules.py               # 图纸审核规则
-│   ├── engineering_review.py  # AI 审核服务
+│   ├── engineering_review.py  # AI 审核编排（fail-closed）
 │   ├── pdf_report.py          # 审核报告 PDF 导出
-│   └── credential_store.py    # 钥匙串凭据
+│   └── env.py                 # 白名单 .env.local 加载
 ├── static/
-│   ├── index.html             # 首页：上传 + 运行 + 设置入口
-│   ├── app.js                 # 前端交互
+│   ├── index.html             # 首页：上传 + 运行 + 设置 + 报告
+│   ├── app.js                 # 前端交互（含刷新后恢复）
 │   └── style.css
-├── tests/
-│   └── test_milestone.py      # 累计验收测试
+├── scripts/
+│   ├── make_sample_pdf.py     # 生成课堂脱敏样张
+│   ├── test_review.py         # 离线审核测试（mock，不含 API 费用）
+│   └── test_upload.py         # 真实上传/预览/设置检查（需服务运行）
+├── samples/                   # 课堂脱敏样张与示例报告
 ├── runtime/                   # 运行时私有目录（不入 Git）
-└── _reference/                # 课堂参考代码包（只读参考，非实现副本）
+└── _reference/                # 课堂参考代码包（只读参考，未混入实现）
 ```
 
 ## 4. 安全边界（任何实现不得突破）
 
-1. **Key 隔离**：API Key 只存在于系统钥匙串，绝不进入 Git、SQLite、浏览器、报告、日志。
+1. **Key 隔离**：API Key 只写入本机 `.env.local`（白名单键），运行期读入内存，绝不进入 Git、数据库、浏览器、报告、日志。
 2. **真实图纸不外发**：原 PDF、分页图只有在用户**主动点击运行 AI 审核**时才发送给当次任务的视觉模型；事前授权不可跨次复用。
 3. **DeepSeek 最小化**：只按需接收结构化文本；不收图片、PDF、绝对路径、密钥。
 4. **绝对路径与私有文件**：`runtime/private`、`.env.local`、本机绝对路径不得进入 Git、响应、日志或报告；服务只返回文档 id 与相对引用。
@@ -92,7 +96,7 @@
 **要做什么**
 - 本地启动应用，浏览器自动打开首页。
 - 首页只显示一件事：拖拽/点击上传图纸 PDF 的入口，以及 AI 审核运行按钮。
-- 顶部有统一 AI 设置入口（默认 Gemini＋DeepSeek），可查看但不必配置即可进入下一步。
+- 顶部有统一 AI 设置入口（默认选中第一个已配置视觉密钥的组合，本课堂为 K3＋DeepSeek），可查看但不必配置即可进入下一步。
 
 **完成后能看到什么**
 - 浏览器打开 `http://127.0.0.1:8766/`，首页出现上传区与运行按钮。
@@ -120,9 +124,9 @@
 - 系统把本次任务的图纸页发送给视觉模型提取图纸事实，再按审核规则逐条核对，给出结论与证据。
 
 **完成后能看到什么**
-- 结果页逐条列出审核结论，每条包含：**页码**、**证据位置/摘录**、**结论**（符合 / 不符合 / 未找到）。
-- 弱证据或无法定位的项目明确标为「证据不足，未判定」，不被猜成结论。
-- 页面提示这是「课堂审核草稿」，不是正式工程批准。
+- 结果页逐条列出审核问题，每条包含：**页码**、**证据摘录**、**结论（统一「待工程确认」）**；空问题时明确显示「图纸内容完整，未发现明确问题」。
+- 严格契约（fail-closed）：缺少证据、页码越界、DeepSeek 证据错配到别页 → 整体拒绝本次结果，绝不把弱证据猜成结论；DeepSeek 配置后必须成功，失败则整体失败并明确提示。
+- 页面与报告都标注「课堂审核草稿」，不是正式工程批准。
 
 **交付物**：`backend/models.py`（严格契约）、`backend/providers.py`、`backend/rules.py`、`backend/engineering_review.py`、前端结果页。
 **验收**：从新 PDF 独立运行出带页码与证据的结论；弱坐标被拒绝，错误输出不伪造成结论。
@@ -132,24 +136,32 @@
 **要做什么**
 - 点击「下载审核报告」。
 - 系统生成本地 PDF 报告：文件信息、审核结论清单、每条结论的页码与证据摘录、生成时间与免责声明。
+- 上传后把文档 id 存入本机 `localStorage`（只存 id，无密钥）；页面加载时经 `GET /documents/{id}/review` 恢复：已完成结果在刷新后仍可见。
 
 **完成后能看到什么**
 - 浏览器下载一份完整审核报告 PDF，可直接打开查看或留档。
+- 上传 / 运行中 / 完成 / 失败 / 空白首页五种状态清晰分离；刷新页面后仍能看到已完成的审核结果与下载按钮。
 - 可重新上传新图纸重复第 2–4 步，全程不离开页面。
 
-**交付物**：`backend/pdf_report.py`（报告导出）、前端下载按钮。
-**验收**：报告 PDF 可打开，内容与结果页一致，全程不离开页面。
+**交付物**：`backend/pdf_report.py`（报告导出）、`backend/app.py` 审核状态查询、前端状态管理 + 刷新恢复、`README.md`。
+**验收**：报告 PDF 可打开，内容与结果页一致；刷新后结果与报告可恢复；全程不离开页面。
 
 ## 6. 固定门禁（代码验收命令）
 
 这些命令只校验代码实现正确，**不是**课堂的 4 个教学步骤（教学步骤见第 5 节，以产品可见结果验收）。
 
 ```bash
-python -m unittest -v tests.test_milestone
-python server.py --check
+# 离线审核测试（mock 视觉/DeepSeek，不产生 API 费用，含报告生成）
+./.venv/Scripts/python scripts/test_review.py
+# 服务器自检（首页/样式/脚本存在）
+./.venv/Scripts/python server.py --check
+# 服务运行后：真实上传/预览/设置检查
+./.venv/Scripts/python scripts/test_upload.py
 ```
 
-实现、审查、业务判断三种责任分离：门禁只保证实现正确；`CODEX_REVIEW.md` 做独立审查；**业务结论由人负责**。
+**审计区分**：`scripts/test_review.py` 用 mock 走离线链路（不含真实 API 调用）；`scripts/test_upload.py` 与课堂演示里的「开始 AI 审核」为真实调用，需已配置的视觉/复核密钥。产品界面的结果来自真实调用，夹具只出现在离线测试中，不冒充真实 AI。
+
+实现、审查、业务判断三种责任分离：门禁只保证实现正确；代码审查由独立工具（如 Codex）完成；**业务结论由人负责**。
 
 ## 7. 开发流程约定
 
@@ -170,8 +182,14 @@ python server.py --check
 
 ## 9. 完成定义（DoD）
 
-- [ ] 4 步逐一跑通：打开页面 → 上传 PDF → AI 审核（含页码与证据）→ 下载审核报告。
-- [ ] 固定门禁全绿；报告/日志/仓库中无 Key、无绝对路径、无真实图纸泄漏。
-- [ ] 审计记录区分真实 AI 调用与离线测试。
-- [ ] README 启动命令可复现；AGENTS.md / CODEX_REVIEW.md 同步更新。
-- [ ] `_reference` 仅作参考，未混入实现。
+- [x] 4 步逐一跑通：打开页面 → 上传 PDF → AI 审核（含页码与证据）→ 下载审核报告；刷新后已完成结果仍可见。
+- [x] 固定门禁全绿：`scripts/test_review.py` 75/75、`server.py --check` 3/3、`scripts/test_upload.py` 18/18；报告/日志/仓库中无 Key、无绝对路径、无真实图纸泄漏。
+- [x] 审计记录区分真实 AI 调用与离线测试（见第 6 节）。
+- [x] README 启动命令可复现；本总纲已同步修订（技术栈/目录/门禁/结论边界）。
+- [x] `_reference` 仅作参考，未混入实现（项目代码零引用）。
+
+## 10. 修订记录
+
+| 日期 | 版本 | 内容 |
+|---|---|---|
+| 2026-08-15 | v0.4 | 第 4 步验收后同步总纲：技术栈对齐（PyMuPDF / reportlab / `.env.local` 白名单）、目录结构对齐（`scripts/`、`samples/`、`backend/env.py`）、结论统一「待工程确认」、门禁与 DoD 全绿、补充刷新后恢复已完成结果。

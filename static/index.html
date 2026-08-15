@@ -23,6 +23,7 @@
           <input type="radio" name="provider" value="k3-deepseek" />
           <span>K3 + DeepSeek</span>
         </label>
+        <span id="settings-hint" class="settings-hint" hidden>未配置任何视觉模型密钥，请先在 .env.local 中填写后重启。</span>
       </div>
     </header>
 
@@ -31,7 +32,7 @@
       <button id="review-entry" class="review-entry" type="button">AI 图纸审核</button>
     </section>
 
-    <!-- 上传视图 -->
+    <!-- 上传 + 审核视图 -->
     <section id="view-upload" class="view" hidden>
       <div id="drop-zone" class="drop-zone" tabindex="0">
         <p class="drop-zone-title">点击选择，或将 PDF 图纸拖到这里</p>
@@ -49,7 +50,7 @@
           <div><dt>SHA256</dt><dd id="doc-sha256">-</dd></div>
         </dl>
         <div class="doc-actions">
-          <button id="review-run" class="review-run" type="button" disabled>开始 AI 审核（第 3 步接入）</button>
+          <button id="review-run" class="review-run" type="button">开始 AI 审核</button>
           <button id="rechoose" class="rechoose" type="button">重新选择</button>
         </div>
       </div>
@@ -57,6 +58,29 @@
       <div id="preview-wrap" class="preview-wrap" hidden>
         <h2 class="preview-title">第一页预览</h2>
         <img id="preview-img" class="preview-img" alt="第一页预览" />
+      </div>
+
+      <!-- 审核进行中 -->
+      <div id="review-status" class="review-status" hidden>
+        <p>正在 AI 审核图纸…请稍候（视觉模型读取全部页）</p>
+      </div>
+
+      <!-- 审核失败：清空旧结果，明确显示失败 -->
+      <div id="review-fail" class="review-fail" hidden>
+        <p class="review-fail-title">审核失败</p>
+        <p id="review-fail-msg" class="review-fail-msg"></p>
+      </div>
+
+      <!-- 审核结果：图纸 AI 审核报告 -->
+      <div id="review-results" class="review-results" hidden>
+        <h2 class="report-title">图纸 AI 审核报告</h2>
+        <p id="report-summary" class="report-summary"></p>
+        <ol id="findings-list" class="findings-list"></ol>
+        <div class="doc-actions">
+          <button id="report-download" class="review-run" type="button">下载审核报告</button>
+          <button id="review-again" class="rechoose" type="button">重新上传</button>
+        </div>
+        <p class="report-note">所有结论均为「待工程确认」；本报告为课堂审核草稿，不构成正式工程批准。</p>
       </div>
     </section>
   </main>

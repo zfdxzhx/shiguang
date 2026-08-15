@@ -129,3 +129,22 @@ def preview_path_for(document_id: str) -> Path:
     if not path.is_file():
         raise IntakeError("预览不存在或已失效，请重新上传。", status=404)
     return path
+
+
+def render_all_pages(document_id: str, max_edge: int = 1600) -> list[bytes]:
+    """在审核时把该图纸所有页渲染为 PNG（只保存在内存，不落盘、不外传其他方）。"""
+    original_path = PRIVATE_DIR / f"{document_id}_original.pdf"
+    if not original_path.is_file():
+        raise IntakeError("文档不存在或已失效，请重新上传。", status=404)
+
+    doc = pymupdf.open(original_path)
+    try:
+        images: list[bytes] = []
+        for page in doc:
+            zoom = min(max_edge / page.rect.width, max_edge / page.rect.height, 2.0)
+            zoom = max(zoom, 0.1)
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False)
+            images.append(pix.tobytes("png"))
+        return images
+    finally:
+        doc.close()

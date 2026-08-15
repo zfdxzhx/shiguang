@@ -2,3 +2,5 @@ fastapi>=0.135,<0.136
 uvicorn>=0.51,<0.52
 python-multipart>=0.0.22,<0.1
 pymupdf>=1.28,<2
+openai>=2.46,<3
+reportlab>=4.4,<5
